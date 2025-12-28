@@ -57,7 +57,6 @@ def init_db():
         )
     ''')
 
-    # 创建 reader 表
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS reader (
             RNo VARCHAR(20) PRIMARY KEY,
@@ -804,20 +803,20 @@ def save_stock():
         conn = sqlite3.connect('library.db')
         cursor = conn.cursor()
         
-        # 1. 检查入库单号是否已存在
+        # 检查入库单号是否已存在
         cursor.execute('SELECT COUNT(*) FROM bookstocking WHERE BBSNo = ?', (stock_no,))
         if cursor.fetchone()[0] > 0:
             conn.close()
             return jsonify({'success': False, 'message': '入库单号已存在'}), 400
         
-        # 2. 检查图书是否存在
+        # 检查图书是否存在
         cursor.execute('SELECT BNo, BName FROM book WHERE BNo = ?', (book_no,))
         book_info = cursor.fetchone()
         if not book_info:
             conn.close()
             return jsonify({'success': False, 'message': '图书不存在'}), 400
         
-        # 3. 获取当前管理员（默认使用第一个管理员）
+        # 获取当前管理员（默认使用第一个管理员）
         cursor.execute('SELECT MNo FROM manager LIMIT 1')
         manager_result = cursor.fetchone()
         if manager_result:
@@ -825,19 +824,19 @@ def save_stock():
         else:
             manager_no = 'M001'  # 默认值
         
-        # 4. 创建入库单
+        # 创建入库单
         cursor.execute('''
             INSERT INTO bookstocking (BBSNo, BBSTime, BBSW, MNo)
             VALUES (?, ?, '1', ?)
         ''', (stock_no, stock_date, manager_no))
         
-        # 5. 添加入库明细
+        # 添加入库明细
         cursor.execute('''
             INSERT INTO bookStockingDetail (BBSNo, BNo, BBSNum)
             VALUES (?, ?, ?)
         ''', (stock_no, book_no, stock_num))
         
-        # 6. 更新图书库存
+        # 更新图书库存
         cursor.execute('''
             UPDATE book 
             SET TotalNum = TotalNum + ?, Biomass = Biomass + ?
@@ -1021,25 +1020,25 @@ def save_damage():
         conn = sqlite3.connect('library.db')
         cursor = conn.cursor()
         
-        # 1. 检查报损单号是否已存在
+        # 检查报损单号是否已存在
         cursor.execute('SELECT COUNT(*) FROM breakage WHERE BANO = ?', (damage_no,))
         if cursor.fetchone()[0] > 0:
             conn.close()
             return jsonify({'success': False, 'message': '报损单号已存在'}), 400
         
-        # 2. 检查图书是否存在
+        # 检查图书是否存在
         cursor.execute('SELECT BNo, BName, Biomass FROM book WHERE BNo = ?', (book_no,))
         book_info = cursor.fetchone()
         if not book_info:
             conn.close()
             return jsonify({'success': False, 'message': '图书不存在'}), 400
         
-        # 3. 检查图书库存是否充足
+        # 检查图书库存是否充足
         if book_info[2] < damage_num:
             conn.close()
             return jsonify({'success': False, 'message': f'图书库存不足，当前库存：{book_info[2]}本'}), 400
         
-        # 4. 获取当前管理员（默认使用第一个管理员）
+        # 获取当前管理员（默认使用第一个管理员）
         cursor.execute('SELECT MNo FROM manager LIMIT 1')
         manager_result = cursor.fetchone()
         if manager_result:
@@ -1047,7 +1046,7 @@ def save_damage():
         else:
             manager_no = 'M001'  # 默认值
         
-        # 5. 生成报损明细单号
+        # 生成报损明细单号
         cursor.execute('SELECT MAX(CAST(SUBSTR(BADNo, 3) AS INTEGER)) FROM breakageDetail WHERE BADNo LIKE "BD%"')
         result = cursor.fetchone()
         if result and result[0]:
@@ -1056,19 +1055,19 @@ def save_damage():
         else:
             bad_no = "BD001"
         
-        # 6. 创建报损主记录
+        # 创建报损主记录
         cursor.execute('''
             INSERT INTO breakage (BANO, BADNo, BATime, BASum, MNO)
             VALUES (?, ?, ?, ?, ?)
         ''', (damage_no, bad_no, damage_date, damage_num, manager_no))
         
-        # 7. 创建报损明细记录
+        # 创建报损明细记录
         cursor.execute('''
             INSERT INTO breakageDetail (BADNo, BNo, Reasons, BADNum)
             VALUES (?, ?, ?, ?)
         ''', (bad_no, book_no, damage_reason, damage_num))
         
-        # 8. 更新图书库存
+        # 更新图书库存
         cursor.execute('''
             UPDATE book 
             SET Biomass = Biomass - ?
@@ -1569,7 +1568,7 @@ def borrow_book():
         conn = sqlite3.connect('library.db')
         cursor = conn.cursor()
         
-        # 1. 检查借阅卡是否存在且有效
+        # 检查借阅卡是否存在且有效
         cursor.execute('SELECT RNo, CW FROM bookcredit WHERE CNo = ?', (card_number,))
         card_info = cursor.fetchone()
         
@@ -1581,7 +1580,7 @@ def borrow_book():
             conn.close()
             return jsonify({'success': False, 'message': '借阅卡已挂失'})
         
-        # 2. 检查图书是否存在且有库存
+        # 检查图书是否存在且有库存
         cursor.execute('SELECT Biomass FROM book WHERE BNo = ?', (book_number,))
         book_info = cursor.fetchone()
         
@@ -1593,7 +1592,7 @@ def borrow_book():
             conn.close()
             return jsonify({'success': False, 'message': '图书库存不足'})
         
-        # 3. 检查读者是否已借满
+        # 检查读者是否已借满
         cursor.execute('SELECT CNum FROM bookcredit WHERE CNo = ?', (card_number,))
         max_borrow = cursor.fetchone()[0] or 5
         
@@ -1604,7 +1603,7 @@ def borrow_book():
             conn.close()
             return jsonify({'success': False, 'message': f'借阅卡已借满（最多{max_borrow}本）'})
         
-        # 4. 检查是否已借过该书且未还
+        # 检查是否已借过该书且未还
         cursor.execute('SELECT COUNT(*) FROM borrow WHERE CNo = ? AND BNo = ? AND (BBBTime IS NULL OR BBBTime = "")', (card_number, book_number))
         already_borrowed = cursor.fetchone()[0] or 0
         
@@ -1612,7 +1611,7 @@ def borrow_book():
             conn.close()
             return jsonify({'success': False, 'message': '您已借阅此书且未归还'})
         
-        # 5. 办理借书
+        # 办理借书
         borrow_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         cursor.execute('''
@@ -1620,7 +1619,7 @@ def borrow_book():
             VALUES (?, ?, ?, NULL, 0.0, '0')
         ''', (card_number, book_number, borrow_time))
         
-        # 6. 减少图书现存量
+        # 减少图书现存量
         cursor.execute('UPDATE book SET Biomass = Biomass - 1 WHERE BNo = ?', (book_number,))
         
         conn.commit()
@@ -1652,7 +1651,7 @@ def return_book():
         conn = sqlite3.connect('library.db')
         cursor = conn.cursor()
         
-        # 1. 检查是否有对应的借书记录
+        # 检查是否有对应的借书记录
         cursor.execute('''
             SELECT BBTime, BBFine FROM borrow 
             WHERE CNo = ? AND BNo = ? AND (BBBTime IS NULL OR BBBTime = "")
@@ -1680,7 +1679,7 @@ def return_book():
         reader_result = cursor.fetchone()
         reader_name = reader_result[0] if reader_result else "未知读者"
         
-        # 2. 计算是否逾期和罚款
+        # 计算是否逾期和罚款
         new_fine = current_fine
         fines_to_add = 0
         overdue_days = 0
@@ -1726,7 +1725,7 @@ def return_book():
             cursor.execute('UPDATE reader SET RFine = RFine + ? WHERE CNo = ?', (lost_fine, card_number))
             cursor.execute('UPDATE bookcredit SET CFine = CFine + ? WHERE CNo = ?', (lost_fine, card_number))
         
-        # 3. 如果有罚款，添加到 fine 表和 fine_detail 表
+        # 如果有罚款，添加到 fine 表和 fine_detail 表
         if fines_to_add > 0:
             try:
                 # 确保 fine 表和 fine_detail 表存在
@@ -1801,7 +1800,7 @@ def return_book():
                 import traceback
                 traceback.print_exc()
         
-        # 4. 如果是丢失或损坏，创建报损记录
+        # 如果是丢失或损坏，创建报损记录
         damage_no = None
         if return_status in ['damaged', 'lost']:
             try:
@@ -1864,7 +1863,7 @@ def return_book():
                 traceback.print_exc()
                 # 继续执行，不中断主要流程
         
-        # 5. 办理还书
+        # 办理还书
         return_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         cursor.execute('''
@@ -1873,7 +1872,7 @@ def return_book():
             WHERE CNo = ? AND BNo = ? AND (BBBTime IS NULL OR BBBTime = "")
         ''', (return_time, new_fine, card_number, book_number))
         
-        # 6. 更新图书库存
+        # 更新图书库存
         stock_change_message = ""
         if return_status == 'normal':
             # 正常还书：增加现存量
@@ -1893,7 +1892,7 @@ def return_book():
         
         conn.commit()
         
-        # 7. 再次同步罚款数据
+        # 再次同步罚款数据
         if fines_to_add > 0:
             try:
                 # 重新计算罚款总额
@@ -1909,7 +1908,7 @@ def return_book():
             except Exception as e:
                 print(f"[ERROR] 同步罚款数据失败: {e}")
         
-        # 获取更新后的图书信息用于返回
+        # 获取更新后的图书信息返回
         cursor.execute('SELECT Biomass, TotalNum FROM book WHERE BNo = ?', (book_number,))
         updated_book_info = cursor.fetchone()
         updated_biomass = updated_book_info[0] if updated_book_info else book_biomass
@@ -1917,7 +1916,7 @@ def return_book():
         
         conn.close()
         
-        # 8. 返回结果
+        # 返回结果
         fine_message = ""
         if fines_to_add > 0:
             fine_message = f" 产生罚款：¥{fines_to_add:.2f}"
@@ -2680,7 +2679,7 @@ def add_reader():
             VALUES (?, ?, ?, ?, ?, 0.0, ?, ?)
         ''', (new_rno, new_cno, reader_name, sex, id_number, username, password))
         
-        # 创建借阅卡记录 - 修复这里的SQL语句
+        # 创建借阅卡记录
         cursor.execute(f'''
             INSERT INTO bookcredit (CNo, RNo, CFine, CNum, CW, CDate, Crenew)
             VALUES (?, ?, 0.0, ?, '0', datetime('now'), datetime('now', '+{borrow_days} days'))
@@ -2852,7 +2851,7 @@ def reader_borrow_quick_api():
         conn = sqlite3.connect('library.db')
         cursor = conn.cursor()
         
-        # 1. 获取读者借阅卡状态
+        # 获取读者借阅卡状态
         cursor.execute('''
             SELECT r.CNo, bc.CW, r.RFine, bc.CNum
             FROM reader r
@@ -2871,17 +2870,17 @@ def reader_borrow_quick_api():
         reader_fine = float(reader_info[2] or 0)
         max_borrow = reader_info[3] or 5
         
-        # 2. 检查借阅卡状态
+        # 检查借阅卡状态
         if card_status == '1':
             conn.close()
             return jsonify({'success': False, 'message': '借阅卡已挂失', 'code': 'CARD_LOST'})
         
-        # 3. 检查未缴罚款
+        # 检查未缴罚款
         if reader_fine > 0:
             conn.close()
             return jsonify({'success': False, 'message': '有未缴罚款，无法借阅', 'code': 'HAS_FINE', 'fine': reader_fine})
         
-        # 4. 检查已借阅数量
+        # 检查已借阅数量
         cursor.execute('SELECT COUNT(*) FROM borrow WHERE CNo = ? AND (BBBTime IS NULL OR BBBTime = "")', (card_number,))
         borrowed_count = cursor.fetchone()[0] or 0
         
@@ -2889,7 +2888,7 @@ def reader_borrow_quick_api():
             conn.close()
             return jsonify({'success': False, 'message': f'已借满{max_borrow}本', 'code': 'MAX_BORROWED', 'current': borrowed_count, 'max': max_borrow})
         
-        # 5. 检查图书库存
+        # 检查图书库存
         cursor.execute('SELECT BNo, BName, Biomass FROM book WHERE BNo = ?', (book_number,))
         book_info = cursor.fetchone()
         
@@ -2904,7 +2903,7 @@ def reader_borrow_quick_api():
             conn.close()
             return jsonify({'success': False, 'message': '图书库存不足', 'code': 'NO_STOCK'})
         
-        # 6. 检查是否已借阅过该书
+        # 检查是否已借阅过该书
         cursor.execute('SELECT COUNT(*) FROM borrow WHERE CNo = ? AND BNo = ? AND (BBBTime IS NULL OR BBBTime = "")', (card_number, book_number))
         already_borrowed = cursor.fetchone()[0] or 0
         
@@ -2912,7 +2911,7 @@ def reader_borrow_quick_api():
             conn.close()
             return jsonify({'success': False, 'message': '您已借阅此书', 'code': 'ALREADY_BORROWED'})
         
-        # 7. 执行借阅操作
+        # 执行借阅操作
         borrow_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         # 插入借阅记录
@@ -4167,3 +4166,4 @@ if __name__ == '__main__':
     create_views()
     create_triggers()
     app.run(debug=True, host='0.0.0.0', port=5000)
+
