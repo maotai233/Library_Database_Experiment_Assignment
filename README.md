@@ -1,5 +1,5 @@
 # Library_Database_Experiment_Assignment
-By WantongSu and ZhitongWu
+By WantongSu and ZhitongWu.
 # 📚 图书馆管理系统
 
 一个基于Flask + SQLite的完整图书馆管理系统，提供管理员和读者两种角色，涵盖图书管理、借阅管理、入库报损、罚款缴费等核心功能。
