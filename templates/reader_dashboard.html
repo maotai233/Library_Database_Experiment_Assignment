@@ -191,7 +191,6 @@
     </div>
 
     <script>
-        // 统一的更新函数
         function updateAllBorrowData() {
             // 同时更新借阅统计和借阅状态
             updateBorrowStats();
@@ -222,9 +221,9 @@
                 });
         }
 
-        // 全局借阅函数（无确认弹窗）
+        // 全局借阅函数
         window.requestBorrow = function (bookNumber, bookName) {
-            // 直接借阅，不显示确认弹窗
+            // 借阅
             const borrowBtn = event.target;
             const originalText = borrowBtn.innerHTML;
 
@@ -245,7 +244,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // 显示成功消息（轻量级提示，不中断用户）
+                        // 显示成功消息
                         showToast('success', `借阅成功！《${bookName}》`);
 
                         // 更新页面上的图书库存状态
@@ -340,7 +339,7 @@
             // 添加到页面
             const container = document.getElementById('notifications-container');
             if (!container) {
-                // 如果不存在通知容器，创建一个
+                // 如果不存在通知容器，则创建
                 const newContainer = document.createElement('div');
                 newContainer.id = 'notifications-container';
                 newContainer.style.position = 'fixed';
@@ -566,5 +565,6 @@
         </div>
     </footer>
 </body>
+
 
 </html>
