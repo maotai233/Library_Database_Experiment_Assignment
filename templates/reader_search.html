@@ -163,7 +163,7 @@
     </div>
 
     <script>
-        // 快速借阅函数（无弹窗，直接借阅）
+        // 快速借阅函数
         function quickBorrow(bookNumber, bookName, event) {
             const button = event.target.closest('.borrow-btn') || event.target;
 
@@ -200,7 +200,7 @@
                         // 更新库存显示
                         updateBookStockImmediately(bookNumber, button);
 
-                        // 显示轻量级成功提示
+                        // 显示成功提示
                         showQuickSuccess(bookName);
 
                         // 记录借阅成功
@@ -219,7 +219,7 @@
                             button.disabled = false;
                         }, 2000);
 
-                        // 显示轻量级错误提示
+                        // 显示错误提示
                         showQuickError(data.message);
                     }
                 })
@@ -270,9 +270,9 @@
             }
         }
 
-        // 显示轻量级成功提示
+        // 显示成功提示
         function showQuickSuccess(bookName) {
-            // 创建微小的成功提示
+            // 创建成功提示
             const successBadge = document.createElement('div');
             successBadge.className = 'success-badge';
             successBadge.innerHTML = `
@@ -298,9 +298,9 @@
             }, 3000);
         }
 
-        // 显示轻量级错误提示
+        // 显示错误提示
         function showQuickError(message) {
-            // 创建微小的错误提示
+            // 创建错误提示
             const errorBadge = document.createElement('div');
             errorBadge.className = 'error-badge';
             errorBadge.innerHTML = `
@@ -394,5 +394,6 @@
         });
     </script>
 </body>
+
 
 </html>
