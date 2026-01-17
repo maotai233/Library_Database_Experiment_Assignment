@@ -77,7 +77,7 @@ pip install -r requirements.txt
 python app.py # 首次运行会自动创建数据库和初始数据
 ```
 
-​	本地访问 http://localhost:5000，即可开始使用图书馆管理系统
+​	本地访问 http://localhost:5000 ，即可开始使用图书馆管理系统
 
 ## 🔐 登录账户
 
