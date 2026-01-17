@@ -36,7 +36,7 @@ By WantongSu and ZhitongWu.
 ## 📁 项目结构
 
 ```
-library_system/
+Library_Database_Experiment_Assignment/
 ├── app.py                    # 主应用程序文件
 ├── library.db               # SQLite数据库文件
 ├── templates/               # HTML模板文件
